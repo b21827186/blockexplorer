@@ -1,5 +1,5 @@
 import { Alchemy, Network } from 'alchemy-sdk';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 import './App.css';
 
@@ -21,6 +21,8 @@ const alchemy = new Alchemy(settings);
 
 function App() {
   const [blockNumber, setBlockNumber] = useState();
+  const [block, setBlock] = useState();
+  const initial = useRef(false)
 
   useEffect(() => {
     async function getBlockNumber() {
@@ -28,9 +30,30 @@ function App() {
     }
 
     getBlockNumber();
+    console.log(process.env.REACT_APP_ALCHEMY_API_KEY)
   });
 
-  return <div className="App">Block Number: {blockNumber}</div>;
+  useEffect(() => {
+    if (initial.current) {
+      console.log(blockNumber)
+      async function getBlock() {
+        setBlock(await alchemy.core.getBlock(blockNumber))
+      }
+
+      getBlock()
+
+    } else {
+      initial.current = true;
+    }
+  }, [blockNumber])
+
+
+  return (
+    <div className="App">
+      <h3>Block Number: {blockNumber}</h3>
+      <h3> {block.hash} </h3>
+    </div>
+  )
 }
 
 export default App;
